@@ -39,7 +39,8 @@
 
 @implementation OAToken
 
-@synthesize key, secret, session, duration, attributes, forRenewal;
+@synthesize key, secret, verifier, session, duration, forRenewal;
+@dynamic attributes;
 
 #pragma mark init
 
@@ -48,29 +49,33 @@
 }
 
 - (id)initWithKey:(NSString *)aKey secret:(NSString *)aSecret {
-	return [self initWithKey:aKey secret:aSecret session:nil duration:nil
+	return [self initWithKey:aKey secret:aSecret verifier:nil session:nil duration:nil
 				  attributes:nil created:nil renewable:NO];
 }
 
-- (id)initWithKey:(NSString *)aKey secret:(NSString *)aSecret session:(NSString *)aSession
+- (id)initWithKey:(NSString *)aKey secret:(NSString *)aSecret verifier:(NSString *)aVerifier session:(NSString *)aSession
 		 duration:(NSNumber *)aDuration attributes:(NSDictionary *)theAttributes created:(NSDate *)creation
 		renewable:(BOOL)renew {
-	[super init];
-	self.key = aKey;
-	self.secret = aSecret;
-	self.session = aSession;
-	self.duration = aDuration;
-	self.attributes = theAttributes;
-	created = [creation retain];
-	renewable = renew;
-	forRenewal = NO;
+	self = [super init];
+	if (self) {
+		self.key = aKey;
+		self.secret = aSecret;
+		self.verifier = aVerifier;
+		self.session = aSession;
+		self.duration = aDuration;
+		self.attributes = theAttributes;
+		created = [creation retain];
+		renewable = renew;
+		forRenewal = NO;		
+	}
 
 	return self;
 }
 
 - (id)initWithHTTPResponseBody:(const NSString *)body {
-    NSString *aKey = nil;
+	NSString *aKey = nil;
 	NSString *aSecret = nil;
+	NSString *aVerifier = nil;
 	NSString *aSession = nil;
 	NSNumber *aDuration = nil;
 	NSDate *creationDate = nil;
@@ -84,6 +89,8 @@
             aKey = [elements objectAtIndex:1];
         } else if ([[elements objectAtIndex:0] isEqualToString:@"oauth_token_secret"]) {
             aSecret = [elements objectAtIndex:1];
+        } else if ([[elements objectAtIndex:0] isEqualToString:@"oauth_verifier"]) {
+			aVerifier = [elements objectAtIndex:1];
         } else if ([[elements objectAtIndex:0] isEqualToString:@"oauth_session_handle"]) {
 			aSession = [elements objectAtIndex:1];
 		} else if ([[elements objectAtIndex:0] isEqualToString:@"oauth_token_duration"]) {
@@ -99,19 +106,22 @@
 		}
     }
     
-    return [self initWithKey:aKey secret:aSecret session:aSession duration:aDuration
-				  attributes:attrs created:creationDate renewable:renew];
+  	return [self initWithKey:aKey secret:aSecret verifier:aVerifier session:aSession duration:aDuration
+                  attributes:attrs created:creationDate renewable:renew];
 }
 
 - (id)initWithUserDefaultsUsingServiceProviderName:(const NSString *)provider prefix:(const NSString *)prefix {
-	[super init];
-	self.key = [OAToken loadSetting:@"key" provider:provider prefix:prefix];
-	self.secret = [OAToken loadSetting:@"secret" provider:provider prefix:prefix];
-	self.session = [OAToken loadSetting:@"session" provider:provider prefix:prefix];
-	self.duration = [OAToken loadSetting:@"duration" provider:provider prefix:prefix];
-	self.attributes = [OAToken loadSetting:@"attributes" provider:provider prefix:prefix];
-	created = [OAToken loadSetting:@"created" provider:provider prefix:prefix];
-	renewable = [[OAToken loadSetting:@"renewable" provider:provider prefix:prefix] boolValue];
+	self = [super init];
+	if (self) {
+		self.key = [OAToken loadSetting:@"key" provider:provider prefix:prefix];
+		self.secret = [OAToken loadSetting:@"secret" provider:provider prefix:prefix];
+		self.verifier = [OAToken loadSetting:@"verifier" provider:provider prefix:prefix];
+		self.session = [OAToken loadSetting:@"session" provider:provider prefix:prefix];
+		self.duration = [OAToken loadSetting:@"duration" provider:provider prefix:prefix];
+		self.attributes = [OAToken loadSetting:@"attributes" provider:provider prefix:prefix];
+		created = [OAToken loadSetting:@"created" provider:provider prefix:prefix];
+		renewable = [[OAToken loadSetting:@"renewable" provider:provider prefix:prefix] boolValue];		
+	}
 
 	if (![self isValid]) {
 		[self autorelease];
@@ -124,10 +134,11 @@
 #pragma mark dealloc
 
 - (void)dealloc {
-    self.key = nil;
-    self.secret = nil;
-    self.duration = nil;
-    self.attributes = nil;
+	self.key = nil;
+	self.secret = nil;
+	self.verifier = nil;
+	self.duration = nil;
+	self.attributes = nil;
 	[super dealloc];
 }
 
@@ -140,12 +151,13 @@
 - (int)storeInUserDefaultsWithServiceProviderName:(const NSString *)provider prefix:(const NSString *)prefix {
 	[OAToken saveSetting:@"key" object:key provider:provider prefix:prefix];
 	[OAToken saveSetting:@"secret" object:secret provider:provider prefix:prefix];
+	[OAToken saveSetting:@"verifier" object:verifier provider:provider prefix:prefix];
 	[OAToken saveSetting:@"created" object:created provider:provider prefix:prefix];
 	[OAToken saveSetting:@"duration" object:duration provider:provider prefix:prefix];
 	[OAToken saveSetting:@"session" object:session provider:provider prefix:prefix];
 	[OAToken saveSetting:@"attributes" object:attributes provider:provider prefix:prefix];
 	[OAToken saveSetting:@"renewable" object:renewable ? @"t" : @"f" provider:provider prefix:prefix];
-	
+
 	[[NSUserDefaults standardUserDefaults] synchronize];
 	return(0);
 }
@@ -176,10 +188,13 @@
 	[attributes setObject: aAttribute forKey: aKey];
 }
 
+- (NSDictionary *)attributes {
+	return [[attributes copy] autorelease];
+}
+
 - (void)setAttributes:(NSDictionary *)theAttributes {
 	[attributes release];
 	attributes = [[NSMutableDictionary alloc] initWithDictionary:theAttributes];
-	
 }
 
 - (BOOL)hasAttributes {
