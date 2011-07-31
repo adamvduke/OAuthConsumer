@@ -29,11 +29,11 @@
 
 @interface OAConsumer : NSObject {
 @protected
-	NSString *key;
-	NSString *secret;
+	const NSString *key;
+	const NSString *secret;
 }
-@property(copy, readwrite) NSString *key;
-@property(copy, readwrite) NSString *secret;
+@property(copy, readwrite) const NSString *key;
+@property(copy, readwrite) const NSString *secret;
 
 - (id)initWithKey:(const NSString *)aKey secret:(const NSString *)aSecret;
 

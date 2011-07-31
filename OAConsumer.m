@@ -46,8 +46,8 @@
 }
 
 - (BOOL)isEqualToConsumer:(OAConsumer *)aConsumer {
-	return ([self.key isEqualToString:aConsumer.key] &&
-			[self.secret isEqualToString:aConsumer.secret]);
+	return ([self.key isEqualToString:(NSString *)aConsumer.key] &&
+			[self.secret isEqualToString:(NSString *)aConsumer.secret]);
 }
 
 @end

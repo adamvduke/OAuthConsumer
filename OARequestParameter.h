@@ -31,18 +31,18 @@
 @interface OARequestParameter : NSObject {
 @protected
     NSString *name;
-    NSString *value;
+    const NSString *value;
 }
 @property(copy, readwrite) NSString *name;
-@property(copy, readwrite) NSString *value;
+@property(copy, readwrite) const NSString *value;
 
-- (id)initWithName:(NSString *)aName value:(NSString *)aValue;
+- (id)initWithName:(NSString *)aName value:(const NSString *)aValue;
 - (NSString *)URLEncodedName;
 - (NSString *)URLEncodedValue;
 - (NSString *)URLEncodedNameValuePair;
 
 - (BOOL)isEqualToRequestParameter:(OARequestParameter *)parameter;
 
-+ (id)requestParameter:(NSString *)aName value:(NSString *)aValue;
++ (id)requestParameter:(NSString *)aName value:(const NSString *)aValue;
 
 @end
