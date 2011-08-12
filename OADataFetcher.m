@@ -33,8 +33,10 @@
 @synthesize delegate;
 
 - (id)init {
-	[super init];
-	responseData = [[NSMutableData alloc] init];
+	self = [super init];
+	if (self) {
+		responseData = [[NSMutableData alloc] init];
+	}
 	return self;
 }
 
@@ -60,7 +62,7 @@
 															didSucceed:NO];
 
 	[delegate performSelector:didFailSelector withObject:ticket withObject:error];
-  [ticket release], ticket = nil;
+	[ticket release], ticket = nil;
 }
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
