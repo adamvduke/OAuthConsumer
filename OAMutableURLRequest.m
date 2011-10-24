@@ -182,7 +182,7 @@ signatureProvider:(id<OASignatureProviding, NSObject>)aProvider
 	[token release];
 	[(NSObject*)signatureProvider release];
 	[timestamp release];
-	CFRelease(nonce);
+	[nonce release];
 	[super dealloc];
 }
 
