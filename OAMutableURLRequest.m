@@ -119,7 +119,11 @@ signatureProvider:(id<OASignatureProviding, NSObject>)aProvider
 	[chunks addObject:[NSString stringWithFormat:@"oauth_timestamp=\"%@\"", timestamp]];
 	[chunks addObject:[NSString stringWithFormat:@"oauth_nonce=\"%@\"", nonce]];
 	[chunks	addObject:@"oauth_version=\"1.0\""];
-	
+
+    // oauth 1.0a support, if there is a token verifier include it
+	if(token.verifier) {
+        [chunks addObject:[NSString stringWithFormat:@"oauth_verifier=\"%@\"", token.verifier]];
+    }
 	NSString *oauthHeader = [NSString stringWithFormat:@"OAuth %@", [chunks componentsJoinedByString:@", "]];
 	[chunks release];
 
@@ -153,7 +157,11 @@ signatureProvider:(id<OASignatureProviding, NSObject>)aProvider
     [parameterPairs addObject:[[[[OARequestParameter alloc] initWithName:@"oauth_timestamp" value:timestamp] autorelease] URLEncodedNameValuePair]];
     [parameterPairs addObject:[[[[OARequestParameter alloc] initWithName:@"oauth_nonce" value:nonce] autorelease] URLEncodedNameValuePair]];
     [parameterPairs addObject:[[[[OARequestParameter alloc] initWithName:@"oauth_version" value:@"1.0"] autorelease] URLEncodedNameValuePair]];
-	
+
+    // oauth 1.0a support, if there is a token verifier include it
+    if(token.verifier) {
+        [parameterPairs addObject:[[[[OARequestParameter alloc] initWithName:@"oauth_verifier" value:token.verifier] autorelease] URLEncodedNameValuePair]];
+    }
 
 	for(NSString *k in tokenParameters) {
 		[parameterPairs addObject:[[OARequestParameter requestParameter:k value:[tokenParameters objectForKey:k]] URLEncodedNameValuePair]];
