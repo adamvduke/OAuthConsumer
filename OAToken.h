@@ -29,7 +29,7 @@
 @protected
 	NSString *key;
 	NSString *secret;
-  	NSString *verifier;
+	NSString *verifier;
 	NSString *session;
 	NSNumber *duration;
 	NSMutableDictionary *attributes;

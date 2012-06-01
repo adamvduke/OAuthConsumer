@@ -31,7 +31,7 @@
 	OAToken *acToken;
 	OAToken *reqToken;
 	OAToken *initialToken;
-	NSString *authorizedTokenKey;
+	const NSString *authorizedTokenKey;
 	NSString *oauthBase;
 	NSString *realm;
 	NSString *callback;
